@@ -1,0 +1,135 @@
+                 _
+                | |  version 0.2.0
+         ___ ___| |_ __ ___   __ _ _ __
+        / __/ __| | '_ ` _ \ / _` | '_ \
+        \__ \__ \ | | | | | | (_| | |_) |
+        |___/___/_|_| |_| |_|\__,_| .__/
+                                  | |
+                                  |_|
+        D O C U M E N T A T I O N
+
+The latest version of this document can be obtained from http://thesprawl.org/projects/sslmap/
+
+SSLMap is a lightweight TLS/SSL cipher suite scanner. The tool was designed to meet the need of a simple but reliable way to detect weak ciphers suites enabled on SSL endpoints. SSLMap uses a custom SSL engine to avoid unnecessary limitations imposed by existing libraries, as a result it is capable of detecting uncommon cipher suites (e.g. GOST).
+
+Sample Session
+==============
+
+Let's run a sample scan against *thesprawl.org*:
+
+    $ python sslmap.py --host thesprawl.org
+
+	             _                       
+	            | |  version 0.2.0             
+	     ___ ___| |_ __ ___   __ _ _ __  
+	    / __/ __| | '_ ` _ \ / _` | '_ \ 
+	    \__ \__ \ | | | | | | (_| | |_) |
+	    |___/___/_|_| |_| |_|\__,_| .__/ 
+	                              | |    
+	      iphelix@thesprawl.org   |_|   
+
+    [*] Scanning thesprawl.org:443 for 229 known cipher suites.
+    [+] TLS_RSA_WITH_AES_128_CBC_SHA (0x00002F)
+    [+] TLS_DHE_RSA_WITH_DES_CBC_SHA (0x000015)
+    [+] TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA (0x000014)
+    [+] TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA (0x000016)
+    [+] TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x000039)
+    [+] TLS_RSA_WITH_AES_256_CBC_SHA (0x000035)
+    [+] TLS_DHE_RSA_WITH_AES_128_CBC_SHA (0x000033)
+    [+] TLS_RSA_WITH_3DES_EDE_CBC_SHA (0x00000A)
+    [+] TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5 (0x000006)
+    [+] TLS_RSA_WITH_RC4_128_MD5 (0x000004)
+    [+] TLS_RSA_WITH_RC4_128_SHA (0x000005)
+    [+] TLS_RSA_EXPORT_WITH_RC4_40_MD5 (0x000003)
+    [+] TLS_RSA_EXPORT_WITH_DES40_CBC_SHA (0x000008)
+    [+] TLS_RSA_WITH_DES_CBC_SHA (0x000009)
+    [+] SSL2_DES_64_CBC_WITH_MD5 (0x060040)
+    [+] SSL2_RC2_CBC_128_CBC_WITH_MD5 (0x040080)
+    [+] SSL2_RC4_128_WITH_MD5 (0x010080)
+    [+] SSL2_RC2_CBC_128_CBC_WITH_MD5 (0x030080)
+    [+] SSL2_DES_192_EDE3_CBC_WITH_MD5 (0x0700C0)
+    [+] SSL2_RC4_128_EXPORT40_WITH_MD5 (0x020080)
+
+    ==================== Scan Results ====================
+    The following cipher suites were rated as HIGH:
+    TLS_RSA_WITH_AES_128_CBC_SHA
+    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+    TLS_RSA_WITH_AES_256_CBC_SHA
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+    TLS_RSA_WITH_3DES_EDE_CBC_SHA
+
+    The following cipher suites were rated as MEDIUM:
+    TLS_RSA_WITH_RC4_128_MD5
+    TLS_RSA_WITH_RC4_128_SHA
+
+    The following cipher suites were rated as EXPORT:
+    TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA
+    TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5
+    TLS_RSA_EXPORT_WITH_RC4_40_MD5
+    TLS_RSA_EXPORT_WITH_DES40_CBC_SHA
+    SSL2_RC4_128_EXPORT40_WITH_MD5
+
+    The following cipher suites were rated as LOW:
+    TLS_DHE_RSA_WITH_DES_CBC_SHA
+    TLS_RSA_WITH_DES_CBC_SHA
+    SSL2_DES_64_CBC_WITH_MD5
+    SSL2_RC2_CBC_128_CBC_WITH_MD5
+    SSL2_RC4_128_WITH_MD5
+    SSL2_RC2_CBC_128_CBC_WITH_MD5
+    SSL2_DES_192_EDE3_CBC_WITH_MD5
+
+From the above output, you can tell that the server has several weak ciphers rated as EXPORT and LOW. In the ideal situation these ciphers should be removed from a production site. See the [TLS and SSL Cipher Suites](/research/tls-and-ssl-cipher-suites/) article on how to interpret the results.
+
+If you would like to make your own decision on whether a particular cipher is weak or strong, you can repeat the scan with the *--verbose* flag enabled thus allowing you to see individual components of the cipher suite and how the rating was calculated. Below is a snippet of the above scan with the *verbose* flag enabled:
+
+    ...
+    [*] Using SSL v2.0 handshake.
+    [+] SSL2_DES_64_CBC_WITH_MD5 (0x060040)
+        Specs: Kx=RSA, Au=RSA, Enc=DES_64_CBC, Bits=64, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=LOW, Overall=LOW
+    [+] SSL2_RC2_CBC_128_CBC_WITH_MD5 (0x040080)
+        Specs: Kx=RSA, Au=RSA, Enc=RC2_CBC_128_CBC, Bits=128, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=LOW, Overall=LOW
+    [+] SSL2_RC4_128_WITH_MD5 (0x010080)
+        Specs: Kx=RSA, Au=RSA, Enc=RC4_128, Bits=128, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=MEDIUM, Overall=LOW
+    [+] SSL2_RC2_CBC_128_CBC_WITH_MD5 (0x030080)
+        Specs: Kx=RSA, Au=RSA, Enc=RC2_CBC_128_CBC, Bits=128, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=LOW, Overall=LOW
+    [+] SSL2_DES_192_EDE3_CBC_WITH_MD5 (0x0700C0)
+        Specs: Kx=RSA, Au=RSA, Enc=DES_192_EDE3_CBC, Bits=192, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=HIGH, Overall=LOW
+    [+] SSL2_RC4_128_EXPORT40_WITH_MD5 (0x020080)
+        Specs: Kx=RSA, Au=RSA, Enc=RC4_128_EXPORT40, Bits=40, Mac=MD5
+        Score: Kx/Au=LOW, Enc/MAC=EXPORT, Overall=EXPORT
+    ...
+
+Help Screen
+===========
+
+The help screen shows a brief outline of tool's functionality:
+
+    Usage: sslmap.py [options]
+
+    Options:
+      -h, --help        show this help message and exit
+      --host=gmail.com  host
+      --port=443        port
+      --fuzz            fuzz all possible cipher values (takes time)
+      --tls1            use TLS v1.0 handshake
+      --tls11           use TLS v1.1 handshake
+      --tls12           use TLS v1.2 handshake
+      --tls13           use TLS v1.3 handshake (future use)
+      --ssl3            use SSL3 handshake
+      --ssl2            use SSL2 handshake
+      --verbose         enable verbose output
+      --db=ciphers.csv  external cipher suite database. DB Format:
+                        cipher_id,name,protocol,Kx,Au,Enc,Bits,Mac,Auth
+                        Strength,Enc Strength,Overall Strength
+    Usage: sslmap.py [options]
+
+Fuzzing
+=======
+
+As a special note on the *--fuzz* parameter, you may use it to both stress test as well as discover yet unknown cipher suites on a target system. Naturally as there are a few million possible values for the cipher suite parameter, the test may run for some time.
