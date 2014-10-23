@@ -349,7 +349,7 @@ def scan_fuzz_ciphers(host,port,handshakes):
 	print "[*] Fuzzing %s:%d for all possible cipher suite identifiers." % (host, port)
 	for handshake in handshakes:
 		if verbose: print "[*] Using %s handshake..." % handshake
-		for i in range(0,16777215):
+		for i in xrange(0,16777215):
 			cipher_id = '%06x' % i
 			if check_cipher(cipher_id,host,port): print_cipher(cipher_id)
 
